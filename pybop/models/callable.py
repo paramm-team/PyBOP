@@ -20,8 +20,10 @@ def wrap_callable_model(model: Callable, time_variable_name: str) -> Callable:
         A Callable object with the time variable changed to t_eval.
     """
     model_signature = inspect.signature(model)
+    assert time_variable_name in model_signature.parameters, \
+        f"Time variable {time_variable_name} not found in model's signature."
     new_signature = [
-        param.replace(name='t_eval') if param.name == time_variable_name 
+        param.replace(name='t_eval') if param.name == time_variable_name
         else param
         for param in model_signature.values()
     ]
@@ -41,7 +43,7 @@ def wrap_callable_model(model: Callable, time_variable_name: str) -> Callable:
     return new_model
 
 
-class Callable(BaseModel):
+class CallableModel(BaseModel):
     """
     Class for defining a basic callable model.
     The model must be a callable function with t_eval.
@@ -53,6 +55,9 @@ class Callable(BaseModel):
             name: str = "Callable",
     ):
         super().__init__(model, name)
+        assert 't_eval' in inspect.signature(model).parameters, \
+            "Model must have a time variable named 't_eval'.\
+                Use wrap_callable_model to change the time variable name."
 
     def _simulate(self,
                   parameters: Union[Parameters, dict],
