@@ -9,6 +9,7 @@ from pybamm import IDAKLUSolver as IDAKLUSolver
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve
 
+from pybop.simulations.base_sim import BaseSim
 from pybop import Dataset, Experiment, Parameters, ParameterSet, SymbolReplacer
 from pybop.parameters.parameter import Inputs
 
@@ -37,7 +38,7 @@ class TimeSeriesState:
         return self.sol.y.shape[0]
 
 
-class BaseModel:
+class BasePyBamm(BaseSim):
     """
     A base class for constructing and simulating models using PyBaMM.
 
