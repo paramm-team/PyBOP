@@ -3,7 +3,11 @@ from typing import Callable, Optional, Union
 import numpy as np
 import inspect
 
-from pybop import ParameterSet
+from pybop import ParameterSet, Inputs
+from pybop import BaseModel
+
+# Extend this as needed to define acceptable model types
+MODEL_TYPES = Union[BaseModel]
 
 
 class BaseSim():
@@ -13,18 +17,19 @@ class BaseSim():
     model.
     This class defines the essential methods that all simulations should have
     to create a cost function.
-    
     """
 
     def __init__(
             self,
             name: str = "BaseSim",
-            parameter_set: Optional[ParameterSet] = None,
-            model: Optional[Callable] = None,
+            parameter_set: Optional[Union[ParameterSet, dict]] = None,
+            # Extend this to include other model types as needed
+            model: Optional[MODEL_TYPES] = None
     ):
+        self.name = name
         self.model = model
         self.model_arguments = set(inspect.signature(model))
-
+        self.parameter_set = parameter_set
 
     def build(
             self,
@@ -35,7 +40,7 @@ class BaseSim():
         NotImplementedError.
         """
         raise NotImplementedError
-    
+
     def simulate(
             self,
             parameters: Union[ParameterSet, dict],
@@ -44,18 +49,16 @@ class BaseSim():
         """
         Simulate the model with the given parameters and t_eval.
         """
-        # Convert the parameters to a dictionary if it is a ParameterSet
-        if isinstance(ParameterSet):
-            parameters = parameters.to_dict()
-
-        # Check that any function arguments that are not specified in
-        # parameters have a default value
-        for arg in self.model_arguments.parameters:
-            if arg == "t_eval":
-                continue
-            if arg not in parameters.keys():
-                assert arg.default is not inspect.Parameter.empty, f"Parameter\
-                {arg} is not specified and does not have a default value."
-
-        output = self.model(t_eval=t_eval, **parameters)
-        return output
+        if self.model is None:
+            raise ValueError("Model has not been defined.")
+        elif type(self.model) is BaseModel:
+            output = self.model._simulate(
+                parameters,  # The model parameters which are to be optimized
+                self.parameter_set,  # Fixed parameters for the model
+                t_eval,  # The time points at which the model is evaluated
+            )
+        else:
+            # Extend this if statement to include other model types as needed
+            raise NotImplementedError(f"Model is not in {MODEL_TYPES}.")
+    
+        return output  # TODO: Add type hinting on output
