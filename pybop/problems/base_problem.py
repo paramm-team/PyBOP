@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from pybamm import IDAKLUSolver
 
-from pybop import BaseModel, Dataset, Parameter, Parameters
+from pybop import BaseSim, Dataset, Parameter, Parameters
 from pybop.parameters.parameter import Inputs
 
 
@@ -30,7 +30,7 @@ class BaseProblem:
     def __init__(
         self,
         parameters: Parameters,
-        model: Optional[BaseModel] = None,
+        model: Optional[BaseSim] = None,
         check_model: bool = True,
         signal: Optional[list[str]] = None,
         additional_variables: Optional[list[str]] = None,

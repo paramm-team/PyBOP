@@ -3,6 +3,8 @@ from typing import Callable, Optional, Union
 import numpy as np
 import inspect
 
+import pybamm
+
 from pybop import ParameterSet, Inputs
 from pybop import BaseModel
 
@@ -27,9 +29,26 @@ class BaseSim():
             model: Optional[MODEL_TYPES] = None
     ):
         self.name = name
+        # The model class that is used for the simulation
         self.model = model
-        self.model_arguments = set(inspect.signature(model))
-        self.parameter_set = parameter_set
+
+        # Set up the parameter set
+        self.__init_parameters__(parameter_set)
+
+        # If the model has a build method, use it
+        if model._build is not None:
+            self._build = self.model._build
+
+    def __init_parameters__(self, parameter_set):
+        if parameter_set is None:
+            self._parameter_set = None
+        elif isinstance(parameter_set, dict):
+            self._parameter_set = dict.copy(parameter_set)
+        elif isinstance(parameter_set, ParameterSet):
+            self._parameter_set = parameter_set.copy()
+        else:
+            raise ValueError("Parameter set must be a dictionary, PyBop\
+                             ParameterSet, or none.")
 
     def build(
             self,
@@ -39,7 +58,11 @@ class BaseSim():
         If this is called without being implemented, it should raise a
         NotImplementedError.
         """
-        raise NotImplementedError
+        if self._build is None:
+            raise NotImplementedError("Build method not implemented.")
+        else:
+            # Use the build method from the model passing self
+            self._build(self)
 
     def simulate(
             self,
@@ -54,7 +77,7 @@ class BaseSim():
         elif type(self.model) is BaseModel:
             output = self.model._simulate(
                 parameters,  # The model parameters which are to be optimized
-                self.parameter_set,  # Fixed parameters for the model
+                self._parameter_set,  # Fixed parameters for the model
                 t_eval,  # The time points at which the model is evaluated
             )
         else:
