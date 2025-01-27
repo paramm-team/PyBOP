@@ -231,7 +231,10 @@ class BasePyBamm(BaseSim):
         else:
             raise ValueError(f'Unrecognised initial state: "{list(initial_state)[0]}"')
 
-    def set_initial_state(self, initial_state: dict, inputs: Optional[Inputs] = None):
+    def set_initial_state(self,
+                          initial_state: dict,
+                          inputs: Optional[Inputs] = None
+                          ):
         """
         Set the initial state of charge or concentrations for the battery model.
 

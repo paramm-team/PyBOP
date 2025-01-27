@@ -5,7 +5,7 @@ import inspect
 
 import pybamm
 
-from pybop import ParameterSet, Inputs
+from pybop import Parameters, ParameterSet, Inputs
 from pybop import BaseModel
 
 # Extend this as needed to define acceptable model types
@@ -52,17 +52,23 @@ class BaseSim():
 
     def build(
             self,
+            *args,
+            **kwargs
     ):
         """
-        If any build steps are required, they should be implemented here. 
+        If any build steps are required, they should be implemented here.
         If this is called without being implemented, it should raise a
         NotImplementedError.
         """
+
         if self._build is None:
-            raise NotImplementedError("Build method not implemented.")
+            raise NotImplementedError(
+                "Build method not implemented in the model."
+                )
         else:
-            # Use the build method from the model passing self
-            self._build(self)
+            # Use the build method from the model passing self as well as
+            # any other arguments and keyword arguments
+            self._build(self, *args, **kwargs)
 
     def simulate(
             self,
@@ -75,7 +81,7 @@ class BaseSim():
         if self.model is None:
             raise ValueError("Model has not been defined.")
         elif type(self.model) is BaseModel:
-            output = self.model._simulate(
+            output = self.model.selfulate(
                 parameters,  # The model parameters which are to be optimized
                 self._parameter_set,  # Fixed parameters for the model
                 t_eval,  # The time points at which the model is evaluated
@@ -83,5 +89,7 @@ class BaseSim():
         else:
             # Extend this if statement to include other model types as needed
             raise NotImplementedError(f"Model is not in {MODEL_TYPES}.")
-    
+
         return output  # TODO: Add type hinting on output
+
+
