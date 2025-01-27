@@ -31,6 +31,8 @@ class PyBaMMSim(BaseSim, Simulation):
             # TODO: Enable this if all Simulation requirements are met
             Simulation().__init__(self, *args, **kwargs)  # noqa: F821
         else:
+            # TODO: Should these setters/getters be implemented before or
+            # or even regardless of the Simulation parent class bing enabled?
             # Define the Simulation attributes via some getters
 
             @property
@@ -46,7 +48,6 @@ class PyBaMMSim(BaseSim, Simulation):
                 return self._unprocessed_parameter_set
 
             # TODO: Implement setters if needed to either nullify or set
-
 
     def __init_parameters__(self, parameter_set):
         """ Called by BaseSim.__init__ to set the parameter set. """
