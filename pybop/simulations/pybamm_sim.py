@@ -30,7 +30,9 @@ class PyBaMMSim(BaseSim, Simulation):
         if False:
             # TODO: Enable this if all Simulation requirements are met
             Simulation().__init__(self, *args, **kwargs)  # noqa: F821
+            self.sim_class = True
         else:
+            self.sim_class = False
             # TODO: Should these setters/getters be implemented before or
             # or even regardless of the Simulation parent class bing enabled?
             # Define the Simulation attributes via some getters
@@ -73,52 +75,22 @@ class PyBaMMSim(BaseSim, Simulation):
     ):
         inputs = self.classify_parameters(parameters=parameters, inputs=inputs)
         if initial_state is not None:
-            self.set_initial_state(initial_state, inputs=inputs)
+            # Convert the initial state to PyBaMM format
+            initial_state = None  # TODO: Implement this
+            # This is from Simulation
+            self.set_initial_soc(initial_state, inputs=inputs)
+            # TODO: Could/Should this be implemented as a setter?
+            self._unprocessed_parameter_set = self._parameter_values
+            # TODO: Check if this is acceptable if the Simulation class is
+            # enabled e.g.
+            # if not self.sim_class:
+            del self._parameter_values  # Clean up unused attribute
 
         # Call the build method of BaseSim to build the model from its own
         # methods, this works like super().__init__ or BaseSim.__init__ as here
         BaseSim().build(parameters=parameters, inputs=inputs)
 
-    def set_initial_state(self, initial_state: dict, inputs: Optional[dict] = None):
-        """
-        Set the initial state of the model.
-        """
-        self.model.clear() #  TODO: Determine if this is a sim (self) or model (self.model) method
-
-        self.model._set_initial_state(initial_state=initial_state, inputs=inputs)
-
-        self._parameter_set = self._unprocessed_parameter_set.copy()
-
-    def _set_initial_state(self, initial_state: dict, inputs: Optional[Inputs] = None):
-        """
-        Set the initial state of charge or concentrations for the battery model.
-
-        Parameters
-        ----------
-        initial_state : dict
-            A valid initial state, e.g. the initial state of charge or open-circuit voltage.
-        inputs : Inputs
-            The input parameters to be used when building the model.
-        """
-        initial_state = self.convert_to_pybamm_initial_state(initial_state)
-
-        if not self.pybamm_model._built:  # noqa: SLF001
-            self.pybamm_model.build_model()
-
-        # Temporary construction of attributes for PyBaMM
-        self._model = self.pybamm_model
-        self._unprocessed_parameter_values = self._unprocessed_parameter_set
-
-        # Set initial state via PyBaMM's Simulation class
-        Simulation.set_initial_soc(self, initial_state, inputs=inputs)
-
-        # Update the default parameter set for consistency
-        self._unprocessed_parameter_set = self._parameter_values
-
-        # Clear the pybamm objects
-        del self._model
-        del self._unprocessed_parameter_values
-        del self._parameter_values
+        # Need to create the current function
 
     def classify_parameters(self,
                             parameters: Optional[Parameters] = None,
