@@ -26,10 +26,13 @@ class PyBaMMSim(BaseSim, Simulation):
             # Extend this to include other model types as needed
             model: Optional[MODEL_TYPES] = None,
     ):
-        BaseSim().__init__(name, parameter_set, model)
+        super().__init__(name, parameter_set, model)
         if False:
             # TODO: Enable this if all Simulation requirements are met
+            # TODO: Check which of these are needed noting if we require an init that satisfies the Simulation class we can put a super in BaseSim
+            # Then basesim expects that the models that build on it will use multiple inheritance
             Simulation().__init__(self, *args, **kwargs)  # noqa: F821
+            super().__init__(self, *args, **kwargs)  # noqa: F821
             self.sim_class = True
         else:
             self.sim_class = False
@@ -87,8 +90,8 @@ class PyBaMMSim(BaseSim, Simulation):
             del self._parameter_values  # Clean up unused attribute
 
         # Call the build method of BaseSim to build the model from its own
-        # methods, this works like super().__init__ or BaseSim.__init__ as here
-        BaseSim().build(parameters=parameters, inputs=inputs)
+        # methods.
+        super().build(parameters=parameters, inputs=inputs)
 
         # Need to create the current function
 
